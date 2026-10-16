@@ -1,19 +1,18 @@
--- 海蓝家居广告分析：按顺序逐段运行，每段只解决一个问题。
-USE hailan_ads_practice_20261016;
 
--- 第1步：检查导入行数。预期分别为7、12、90、15、7。
+
+-- 第1步：检查导入行数。
 SELECT 'source_notes' AS table_name, COUNT(*) AS row_count FROM source_notes
 UNION ALL SELECT 'campaign_summary', COUNT(*) FROM campaign_summary
 UNION ALL SELECT 'ad_daily', COUNT(*) FROM ad_daily
 UNION ALL SELECT 'search_terms', COUNT(*) FROM search_terms
 UNION ALL SELECT 'listing_records', COUNT(*) FROM listing_records;
 
--- 第2步：检查重复和订单合计。两个结果都应为空。
+-- 第2步：检查重复和订单合计。
 SELECT period, campaign_name, COUNT(*) AS n
 FROM campaign_summary GROUP BY period, campaign_name HAVING COUNT(*) > 1;
 SELECT * FROM campaign_summary WHERE total_orders <> ad_orders + organic_orders;
 
--- 第3步：按时期汇总。SUM求和；CASE按时期填写天数。
+-- 第3步：按时期汇总。
 CREATE TEMPORARY TABLE period_totals AS
 SELECT period,
  CASE WHEN period = '预算调整前' THEN 14 ELSE 16 END AS days,
@@ -36,7 +35,7 @@ SELECT period,
  ROUND(100*ad_orders/NULLIF(clicks,0),2) AS cvr_pct,
  ROUND(ad_sales/NULLIF(ad_orders,0),2) AS aov
 FROM period_totals;
--- 看结果：日均花费122.92→194.41，贡献毛利181.67→117.97。
+
 
 -- 第5步：找低效活动
 SELECT campaign_type,
